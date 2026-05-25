@@ -128,7 +128,7 @@ sports-tournament-dbms/
 
 | Name | Student Number |
 |------|----------------|
-| [Student 1] | [ID 1] |
-| [Student 2] | [ID 2] |
-| [Student 3] | [ID 3] |
-| [Student 4] | [ID 4] |
+| [Aibergen Baktygozhayev] | [22301399] |
+| [Maksat Bakyt] | [22300648] |
+| [Ruslan Zhunusbaev] | [22309322] |
+
