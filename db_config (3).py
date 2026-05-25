@@ -1,17 +1,6 @@
-"""
-Sports Tournament Database Management System
-DB Connection Configuration
-"""
-
 import psycopg2
 import psycopg2.extras
 import os
-
-# ──────────────────────────────────────────────
-# DATABASE CONFIGURATION
-# Replace with your cloud DB credentials
-# Supported: Railway, Render, Supabase, etc.
-# ──────────────────────────────────────────────
 
 DB_CONFIG = {
     "host":     os.getenv("DB_HOST",     "your-cloud-db-host.railway.app"),
@@ -21,16 +10,10 @@ DB_CONFIG = {
     "password": os.getenv("DB_PASSWORD", "your_password_here"),
 }
 
-
 def get_connection():
-    """Return a new database connection."""
     return psycopg2.connect(**DB_CONFIG)
 
-
 def execute_query(query: str, params=None, fetch: bool = True):
-    """
-    Execute a SELECT query and return results as list of dicts.
-    """
     conn = get_connection()
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -42,12 +25,7 @@ def execute_query(query: str, params=None, fetch: bool = True):
     finally:
         conn.close()
 
-
 def execute_write(query: str, params=None):
-    """
-    Execute INSERT / UPDATE / DELETE.
-    Returns the number of affected rows.
-    """
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -62,9 +40,6 @@ def execute_write(query: str, params=None):
 
 
 def execute_returning(query: str, params=None):
-    """
-    Execute INSERT ... RETURNING id and return the new row id.
-    """
     conn = get_connection()
     try:
         with conn.cursor() as cur:
