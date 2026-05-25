@@ -1,10 +1,3 @@
--- ============================================================
--- SPORTS TOURNAMENT DATABASE MANAGEMENT SYSTEM
--- DDL - Data Definition Language
--- CMPE344 - Database Management Systems and Programming II
--- ============================================================
-
--- Drop tables if they exist (in reverse dependency order)
 DROP TABLE IF EXISTS match_results CASCADE;
 DROP TABLE IF EXISTS matches CASCADE;
 DROP TABLE IF EXISTS team_players CASCADE;
@@ -15,9 +8,6 @@ DROP TABLE IF EXISTS venues CASCADE;
 DROP TABLE IF EXISTS user_groups CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
--- ============================================================
--- TABLE 1: user_groups
--- ============================================================
 CREATE TABLE user_groups (
     group_id      SERIAL PRIMARY KEY,
     group_name    VARCHAR(50) NOT NULL UNIQUE,
@@ -29,9 +19,6 @@ CREATE TABLE user_groups (
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================================================
--- TABLE 2: users
--- ============================================================
 CREATE TABLE users (
     user_id       SERIAL PRIMARY KEY,
     username      VARCHAR(50) NOT NULL UNIQUE,
@@ -45,9 +32,6 @@ CREATE TABLE users (
     CONSTRAINT email_format CHECK (email LIKE '%@%.%')
 );
 
--- ============================================================
--- TABLE 3: venues
--- ============================================================
 CREATE TABLE venues (
     venue_id      SERIAL PRIMARY KEY,
     venue_name    VARCHAR(100) NOT NULL,
@@ -58,9 +42,6 @@ CREATE TABLE venues (
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================================================
--- TABLE 4: tournaments
--- ============================================================
 CREATE TABLE tournaments (
     tournament_id   SERIAL PRIMARY KEY,
     tournament_name VARCHAR(150) NOT NULL,
@@ -76,9 +57,6 @@ CREATE TABLE tournaments (
     CONSTRAINT valid_dates CHECK (end_date >= start_date)
 );
 
--- ============================================================
--- TABLE 5: teams
--- ============================================================
 CREATE TABLE teams (
     team_id       SERIAL PRIMARY KEY,
     team_name     VARCHAR(100) NOT NULL,
@@ -93,9 +71,6 @@ CREATE TABLE teams (
     CONSTRAINT unique_team_per_tournament UNIQUE (team_name, tournament_id)
 );
 
--- ============================================================
--- TABLE 6: players
--- ============================================================
 CREATE TABLE players (
     player_id     SERIAL PRIMARY KEY,
     full_name     VARCHAR(100) NOT NULL,
@@ -109,9 +84,6 @@ CREATE TABLE players (
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================================================
--- TABLE 7: team_players (junction table)
--- ============================================================
 CREATE TABLE team_players (
     team_player_id SERIAL PRIMARY KEY,
     team_id        INTEGER NOT NULL REFERENCES teams(team_id) ON DELETE CASCADE,
@@ -120,10 +92,6 @@ CREATE TABLE team_players (
     is_captain     BOOLEAN DEFAULT FALSE,
     CONSTRAINT unique_player_per_team UNIQUE (team_id, player_id)
 );
-
--- ============================================================
--- TABLE 8: matches
--- ============================================================
 CREATE TABLE matches (
     match_id        SERIAL PRIMARY KEY,
     tournament_id   INTEGER NOT NULL REFERENCES tournaments(tournament_id) ON DELETE CASCADE,
@@ -137,10 +105,6 @@ CREATE TABLE matches (
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT no_self_match CHECK (home_team_id <> away_team_id)
 );
-
--- ============================================================
--- TABLE 9: match_results
--- ============================================================
 CREATE TABLE match_results (
     result_id       SERIAL PRIMARY KEY,
     match_id        INTEGER NOT NULL UNIQUE REFERENCES matches(match_id) ON DELETE CASCADE,
@@ -154,9 +118,6 @@ CREATE TABLE match_results (
     recorded_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================================================
--- INDEXES for performance
--- ============================================================
 CREATE INDEX idx_users_username ON users(username);
 CREATE INDEX idx_users_group ON users(group_id);
 CREATE INDEX idx_teams_tournament ON teams(tournament_id);
