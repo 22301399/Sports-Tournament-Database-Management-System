@@ -1,25 +1,9 @@
-"""
-Sports Tournament Database Management System
-Main GUI Application — Python + Tkinter
-CMPE344 — Database Management Systems and Programming II
-
-Screens:
-  1. Login
-  2. Dashboard (Home)
-  3. Tournaments Manager
-  4. Teams Manager
-  5. Players Manager
-  6. Matches Manager
-  7. Reports & Statistics
-"""
-
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 import hashlib
 import os
 import sys
 
-# ── Local import ──────────────────────────────
 sys.path.insert(0, os.path.dirname(__file__))
 try:
     from db_config import execute_query, execute_write, execute_returning
@@ -27,7 +11,6 @@ try:
 except Exception:
     DB_AVAILABLE = False
 
-# ── Color Palette ─────────────────────────────
 C = {
     "bg":       "#0F172A",   # dark navy
     "surface":  "#1E293B",   # card surface
@@ -48,7 +31,6 @@ FONT_BODY = ("Segoe UI", 10)
 FONT_MONO = ("Consolas", 9)
 FONT_BTN  = ("Segoe UI", 10, "bold")
 
-# ── Mock data for offline demo ─────────────────
 MOCK = {
     "users": [
         {"user_id": 1, "username": "admin",    "full_name": "System Administrator", "group_name": "Admin",    "is_active": True},
@@ -83,10 +65,6 @@ MOCK = {
     ],
 }
 
-# ════════════════════════════════════════════════════════════
-# Helper Widgets
-# ════════════════════════════════════════════════════════════
-
 def styled_button(parent, text, command, color=None, width=16):
     color = color or C["accent"]
     btn = tk.Button(
@@ -98,15 +76,12 @@ def styled_button(parent, text, command, color=None, width=16):
     )
     return btn
 
-
 def section_label(parent, text):
     lbl = tk.Label(parent, text=text, font=FONT_H2,
                    bg=C["surface"], fg=C["accent"])
     return lbl
 
-
 def build_treeview(parent, columns, height=12):
-    """Create a styled ttk.Treeview with scrollbars."""
     style = ttk.Style()
     style.theme_use("clam")
     style.configure("Dark.Treeview",
@@ -143,11 +118,6 @@ def build_treeview(parent, columns, height=12):
     frame.columnconfigure(0, weight=1)
     return frame, tree
 
-
-# ════════════════════════════════════════════════════════════
-# SCREEN 1: Login
-# ════════════════════════════════════════════════════════════
-
 class LoginScreen(tk.Frame):
     def __init__(self, master, on_login):
         super().__init__(master, bg=C["bg"])
@@ -155,25 +125,21 @@ class LoginScreen(tk.Frame):
         self._build()
 
     def _build(self):
-        # Center panel
         panel = tk.Frame(self, bg=C["surface"], padx=40, pady=40)
         panel.place(relx=0.5, rely=0.5, anchor="center")
 
-        # Logo / title
         tk.Label(panel, text="🏆", font=("Segoe UI", 48), bg=C["surface"], fg=C["accent"]).pack()
         tk.Label(panel, text="Sports Tournament", font=("Segoe UI", 20, "bold"),
                  bg=C["surface"], fg=C["white"]).pack()
         tk.Label(panel, text="Database Management System", font=("Segoe UI", 11),
                  bg=C["surface"], fg=C["muted"]).pack(pady=(0, 24))
 
-        # Username
         tk.Label(panel, text="Username", font=FONT_BODY, bg=C["surface"], fg=C["muted"], anchor="w").pack(fill="x")
         self.username_var = tk.StringVar(value="admin")
         tk.Entry(panel, textvariable=self.username_var, font=FONT_BODY,
                  bg=C["bg"], fg=C["text"], insertbackground=C["text"],
                  relief="flat", bd=6, width=30).pack(fill="x", pady=(2, 12))
 
-        # Password
         tk.Label(panel, text="Password", font=FONT_BODY, bg=C["surface"], fg=C["muted"], anchor="w").pack(fill="x")
         self.password_var = tk.StringVar(value="admin123")
         tk.Entry(panel, textvariable=self.password_var, font=FONT_BODY,
@@ -205,23 +171,16 @@ class LoginScreen(tk.Frame):
                 (username,)
             )
             if rows:
-                # In real app, compare bcrypt hash; here we just check username exists
                 self.on_login(rows[0])
             else:
                 self.status_lbl.config(text="Invalid username or password.")
         else:
-            # Demo offline mode
             DEMO_CREDS = {"admin": "admin123", "john_emp": "password123"}
             if username in DEMO_CREDS and DEMO_CREDS[username] == password:
                 user = next(u for u in MOCK["users"] if u["username"] == username)
                 self.on_login(user)
             else:
                 self.status_lbl.config(text="Invalid credentials. Try admin / admin123")
-
-
-# ════════════════════════════════════════════════════════════
-# SCREEN 2: Dashboard
-# ════════════════════════════════════════════════════════════
 
 class DashboardScreen(tk.Frame):
     def __init__(self, master, current_user, navigate):
@@ -231,7 +190,6 @@ class DashboardScreen(tk.Frame):
         self._build()
 
     def _build(self):
-        # Header
         hdr = tk.Frame(self, bg=C["surface"], pady=12, padx=20)
         hdr.pack(fill="x")
         tk.Label(hdr, text="🏆 Sports Tournament DMS", font=FONT_H1,
@@ -239,7 +197,6 @@ class DashboardScreen(tk.Frame):
         tk.Label(hdr, text=f"Welcome, {self.current_user.get('full_name','User')}  |  Role: {self.current_user.get('group_name','—')}",
                  font=FONT_BODY, bg=C["surface"], fg=C["muted"]).pack(side="right", padx=10)
 
-        # Stats row
         stats_frame = tk.Frame(self, bg=C["bg"], pady=16)
         stats_frame.pack(fill="x", padx=20)
 
@@ -258,7 +215,6 @@ class DashboardScreen(tk.Frame):
                      bg=C["surface"], fg=color).pack()
             tk.Label(card, text=label, font=FONT_BODY, bg=C["surface"], fg=C["muted"]).pack()
 
-        # Navigation buttons
         nav_frame = tk.Frame(self, bg=C["bg"], pady=10)
         nav_frame.pack(fill="x", padx=20)
         nav_items = [
@@ -278,7 +234,6 @@ class DashboardScreen(tk.Frame):
             )
             btn.pack(side="left", padx=6, pady=4)
 
-        # Recent matches
         rec_frame = tk.Frame(self, bg=C["surface"], padx=20, pady=14)
         rec_frame.pack(fill="both", expand=True, padx=20, pady=10)
         section_label(rec_frame, "Recent & Upcoming Matches").pack(anchor="w", pady=(0, 8))
@@ -329,11 +284,6 @@ class DashboardScreen(tk.Frame):
         self.tree.tag_configure("live",  background="#2e1a1a")
         self.tree.tag_configure("sched", background=C["surface"])
 
-
-# ════════════════════════════════════════════════════════════
-# SCREEN 3: Tournaments Manager
-# ════════════════════════════════════════════════════════════
-
 class TournamentsScreen(tk.Frame):
     def __init__(self, master, navigate):
         super().__init__(master, bg=C["bg"])
@@ -342,21 +292,18 @@ class TournamentsScreen(tk.Frame):
         self._load()
 
     def _build(self):
-        # Toolbar
         tb = tk.Frame(self, bg=C["surface"], pady=10, padx=16)
         tb.pack(fill="x")
         tk.Label(tb, text="🏆 Tournaments", font=FONT_H1, bg=C["surface"], fg=C["accent"]).pack(side="left")
         styled_button(tb, "← Back", lambda: self.navigate("dashboard"), C["muted"], 10).pack(side="right", padx=4)
         styled_button(tb, "+ Add Tournament", self._open_add_form, width=18).pack(side="right", padx=4)
 
-        # Table
         list_frame = tk.Frame(self, bg=C["surface"], padx=16, pady=10)
         list_frame.pack(fill="both", expand=True, padx=16, pady=10)
         cols = ("ID", "Name", "Sport", "Start Date", "End Date", "Status", "Prize Pool", "Max Teams")
         tv_frame, self.tree = build_treeview(list_frame, cols, height=14)
         tv_frame.pack(fill="both", expand=True)
 
-        # Action buttons
         btn_frame = tk.Frame(self, bg=C["bg"], pady=8)
         btn_frame.pack(fill="x", padx=16)
         styled_button(btn_frame, "✏️  Edit Selected",   self._edit_selected,   C["accent2"]).pack(side="left", padx=4)
@@ -502,11 +449,6 @@ class TournamentForm(tk.Toplevel):
         self.on_save(data)
         self.destroy()
 
-
-# ════════════════════════════════════════════════════════════
-# SCREEN 4: Teams Manager
-# ════════════════════════════════════════════════════════════
-
 class TeamsScreen(tk.Frame):
     def __init__(self, master, navigate):
         super().__init__(master, bg=C["bg"])
@@ -598,7 +540,6 @@ class TeamsScreen(tk.Frame):
                 MOCK["teams"] = [t for t in MOCK["teams"] if t["team_id"] != vals[0]]
             self._load()
 
-
 class TeamForm(tk.Toplevel):
     def __init__(self, parent, title, tournaments, on_save, existing=None):
         super().__init__(parent)
@@ -638,11 +579,6 @@ class TeamForm(tk.Toplevel):
         self.on_save({"name": self._name.get(), "city": self._city.get(),
                       "coach": self._coach.get(), "tournament_id": tid})
         self.destroy()
-
-
-# ════════════════════════════════════════════════════════════
-# SCREEN 5: Players Manager
-# ════════════════════════════════════════════════════════════
 
 class PlayersScreen(tk.Frame):
     def __init__(self, master, navigate):
@@ -717,7 +653,6 @@ class PlayersScreen(tk.Frame):
                 MOCK["players"] = [p for p in MOCK["players"] if p["player_id"] != vals[0]]
             self._load()
 
-
 class PlayerForm(tk.Toplevel):
     def __init__(self, parent, title, on_save, existing=None):
         super().__init__(parent)
@@ -751,11 +686,6 @@ class PlayerForm(tk.Toplevel):
     def _save(self):
         self.on_save({k: v.get() for k, v in self._vars.items()})
         self.destroy()
-
-
-# ════════════════════════════════════════════════════════════
-# SCREEN 6: Matches Manager
-# ════════════════════════════════════════════════════════════
 
 class MatchesScreen(tk.Frame):
     def __init__(self, master, navigate):
@@ -825,7 +755,6 @@ class MatchesScreen(tk.Frame):
         self._load()
         messagebox.showinfo("Success", f"Result recorded: {home_score} - {away_score}")
 
-
 class ResultForm(tk.Toplevel):
     def __init__(self, parent, match_id, match_label, on_save):
         super().__init__(parent)
@@ -851,11 +780,6 @@ class ResultForm(tk.Toplevel):
     def _save(self):
         self.on_save(self.match_id, self.home_var.get(), self.away_var.get())
         self.destroy()
-
-
-# ════════════════════════════════════════════════════════════
-# SCREEN 7: Reports & Statistics
-# ════════════════════════════════════════════════════════════
 
 class ReportsScreen(tk.Frame):
     QUERIES = {
@@ -939,11 +863,9 @@ class ReportsScreen(tk.Frame):
         report = self.report_var.get()
         query = self.QUERIES[report]
 
-        # Show SQL
         self.sql_box.delete("1.0", tk.END)
         self.sql_box.insert("1.0", query.strip())
 
-        # Clear results
         for w in self.result_frame.winfo_children():
             w.destroy()
         section_label(self.result_frame, f"Results: {report}").pack(anchor="w", pady=(0,8))
@@ -968,11 +890,6 @@ class ReportsScreen(tk.Frame):
         tv_frame.pack(fill="both", expand=True)
         for row in rows:
             tree.insert("", "end", values=list(row.values()))
-
-
-# ════════════════════════════════════════════════════════════
-# SCREEN 8: Users Manager
-# ════════════════════════════════════════════════════════════
 
 class UsersScreen(tk.Frame):
     def __init__(self, master, navigate):
@@ -1009,11 +926,6 @@ class UsersScreen(tk.Frame):
                     for u in MOCK["users"]]
         for row in rows:
             self.tree.insert("", "end", values=list(row.values()))
-
-
-# ════════════════════════════════════════════════════════════
-# MAIN APP CONTROLLER
-# ════════════════════════════════════════════════════════════
 
 class App(tk.Tk):
     def __init__(self):
