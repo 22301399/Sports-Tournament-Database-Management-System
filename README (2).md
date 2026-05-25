@@ -128,7 +128,7 @@ sports-tournament-dbms/
 
 | Name | Student Number |
 |------|----------------|
-| [Aibergen Baktygozhayev] | [22301399] |
-| [Maksat Bakyt] | [22300648] |
-| [Ruslan Zhunusbaev] | [22309322] |
+| Aibergen Baktygozhayev | 22301399 |
+| Maksat Bakyt | 22300648 |
+| Ruslan Zhunusbaev | 22309322 |
 
