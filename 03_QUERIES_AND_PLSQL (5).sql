@@ -1,13 +1,3 @@
--- ============================================================
--- SPORTS TOURNAMENT DATABASE MANAGEMENT SYSTEM
--- SQL QUERIES & PL/SQL BLOCKS
--- CMPE344 - Database Management Systems and Programming II
--- ============================================================
-
--- ============================================================
--- SECTION A: SQL QUERIES (7 Queries)
--- ============================================================
-
 -- QUERY 1: Tournament Standings with Team Statistics
 -- (JOIN + ORDER BY + computed columns)
 SELECT
@@ -137,10 +127,6 @@ GROUP BY t.tournament_id, t.tournament_name, t.sport_type, t.start_date,
 ORDER BY t.prize_pool DESC;
 
 
--- ============================================================
--- SECTION B: PL/SQL BLOCKS (5 Blocks)
--- ============================================================
-
 -- PL/SQL BLOCK 1: PROCEDURE - Record Match Result
 -- Records a match score and automatically updates team standings
 CREATE OR REPLACE PROCEDURE record_match_result(
@@ -158,7 +144,6 @@ DECLARE
     v_winner_id     INTEGER;
     v_is_draw       BOOLEAN;
 BEGIN
-    -- Get team IDs from the match
     SELECT home_team_id, away_team_id
     INTO v_home_team_id, v_away_team_id
     FROM matches
@@ -168,7 +153,6 @@ BEGIN
         RAISE EXCEPTION 'Match ID % does not exist', p_match_id;
     END IF;
 
-    -- Determine winner
     IF p_home_score > p_away_score THEN
         v_winner_id := v_home_team_id;
         v_is_draw   := FALSE;
@@ -180,7 +164,6 @@ BEGIN
         v_is_draw   := TRUE;
     END IF;
 
-    -- Insert match result
     INSERT INTO match_results (match_id, home_score, away_score, winner_team_id, is_draw, match_duration, recorded_by)
     VALUES (p_match_id, p_home_score, p_away_score, v_winner_id, v_is_draw, p_duration, p_recorded_by)
     ON CONFLICT (match_id) DO UPDATE
@@ -191,10 +174,8 @@ BEGIN
             match_duration = p_duration,
             recorded_at = CURRENT_TIMESTAMP;
 
-    -- Update match status to Completed
     UPDATE matches SET status = 'Completed' WHERE match_id = p_match_id;
 
-    -- Update home team standings
     IF v_is_draw THEN
         UPDATE teams SET draws = draws + 1, points = points + 1 WHERE team_id = v_home_team_id;
         UPDATE teams SET draws = draws + 1, points = points + 1 WHERE team_id = v_away_team_id;
@@ -210,8 +191,7 @@ BEGIN
 END;
 $$;
 
--- Usage example:
--- CALL record_match_result(8, 2, 1, 90, 2);
+CALL record_match_result(8, 2, 1, 90, 2);
 
 
 -- PL/SQL BLOCK 2: FUNCTION - Get Tournament Standings
@@ -260,8 +240,7 @@ BEGIN
 END;
 $$;
 
--- Usage example:
--- SELECT * FROM get_tournament_standings(1);
+SELECT * FROM get_tournament_standings(1);
 
 
 -- PL/SQL BLOCK 3: TRIGGER - Auto-update tournament status
@@ -271,7 +250,6 @@ RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- When a match result is recorded, check if all matches in the tournament are done
     IF (SELECT COUNT(*) FROM matches
         WHERE tournament_id = (SELECT tournament_id FROM matches WHERE match_id = NEW.match_id)
         AND status != 'Completed' AND status != 'Cancelled') = 0 THEN
@@ -331,8 +309,7 @@ BEGIN
 END;
 $$;
 
--- Usage example:
--- SELECT * FROM get_player_stats(1);
+SELECT * FROM get_player_stats(1);
 
 
 -- PL/SQL BLOCK 5: PROCEDURE - Register Team to Tournament
@@ -351,7 +328,6 @@ DECLARE
     v_tournament_status VARCHAR;
     v_new_team_id   INTEGER;
 BEGIN
-    -- Get tournament info
     SELECT max_teams, status INTO v_max_teams, v_tournament_status
     FROM tournaments
     WHERE tournament_id = p_tournament_id;
@@ -364,7 +340,6 @@ BEGIN
         RAISE EXCEPTION 'Cannot register: Tournament is %', v_tournament_status;
     END IF;
 
-    -- Check current team count
     SELECT COUNT(*) INTO v_current_teams
     FROM teams WHERE tournament_id = p_tournament_id;
 
@@ -372,12 +347,10 @@ BEGIN
         RAISE EXCEPTION 'Tournament is full (% / % teams)', v_current_teams, v_max_teams;
     END IF;
 
-    -- Check for duplicate team name
     IF EXISTS (SELECT 1 FROM teams WHERE team_name = p_team_name AND tournament_id = p_tournament_id) THEN
         RAISE EXCEPTION 'Team "%" is already registered in this tournament', p_team_name;
     END IF;
 
-    -- Register the team
     INSERT INTO teams (team_name, city, coach_name, tournament_id)
     VALUES (p_team_name, p_city, p_coach_name, p_tournament_id)
     RETURNING team_id INTO v_new_team_id;
