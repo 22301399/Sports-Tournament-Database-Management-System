@@ -1,1 +1,0 @@
-# Sports-Tournament-Database-Management-System
